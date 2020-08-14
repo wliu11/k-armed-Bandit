@@ -1,12 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug 10 13:06:06 2020
-
-@author: liuwendy
-"""
-
 import numpy as np
+import sys
 
 
 num_steps = 10000
@@ -24,9 +17,7 @@ class Bandit:
         
         # Initialize q(a), Q(a) and N(a) both to 0
         self.q = np.zeros(self.k, dtype=np.float)   # True values
-        self.Q_sample = np.zeros(self.k, dtype=np.float)   # Estimated values
         self.Q = np.zeros(self.k, dtype=np.float)   # Estimated values
-
         self.N = np.zeros(self.k, dtype=np.int)   # Number of actions
         
         
@@ -45,12 +36,13 @@ class Bandit:
         else:
             self.Q[action] += step_size * (reward - self.Q[action])
 
-        
+            
+    # Return a reward sampled from a normal distribution 
     def reward(self, action):
         return np.random.normal(self.q[action], 1)
     
       
-    # np.random.random get the probability
+    # Choose if we are going with greedy or exploitation
     def action(self, sample_avg):
         is_optimal = 1;        
         optimal_arm =  np.argmax(self.q)
@@ -63,11 +55,7 @@ class Bandit:
             return (random_arm, is_optimal)
         
         # Exploit
-        if sample_avg:
-            presumed_optimal = np.random.choice(np.flatnonzero(self.Q_sample == self.Q_sample.max()))
-            
-        else:
-            presumed_optimal = np.random.choice(np.flatnonzero(self.Q == self.Q.max()))
+        presumed_optimal = np.random.choice(np.flatnonzero(self.Q == self.Q.max()))
         
         if (presumed_optimal != optimal_arm):
             is_optimal = 0
@@ -81,12 +69,14 @@ def run_experiment(num_episodes, num_steps):
 
     # Sample average bandit
     for i in range(num_episodes):
+        
         bandit = Bandit()
+        sample_bandit = Bandit()
         
         for j in range(num_steps):
-            action, is_optimal = bandit.action(sample_avg=True)
-            reward = bandit.reward(action)
-            bandit.update(action, reward, sample_avg=True)
+            action, is_optimal = sample_bandit.action(sample_avg=True)
+            reward = sample_bandit.reward(action)
+            sample_bandit.update(action, reward, sample_avg=True)
             
             results[0, j] += reward
             results[1, j] += is_optimal
@@ -103,7 +93,9 @@ def run_experiment(num_episodes, num_steps):
     return results
  
 
+def main():
+    np.savetxt(sys.argv[1], run_experiment(num_episodes, num_steps))
 
-np.savetxt('result.out', run_experiment(num_episodes, num_steps))
 
-  
+if __name__ == "__main__":
+    main()

@@ -9,6 +9,7 @@ num_episodes = 300
 class Bandit:
     
     def __init__(self, k=10, epsilon=0.1):
+        
         # Set epsilon value to the given value of 0.1
         self.epsilon = epsilon
         
@@ -74,6 +75,8 @@ def run_experiment(num_episodes, num_steps):
         sample_bandit = Bandit()
         
         for j in range(num_steps):
+            
+            # Sample average bandit
             action, is_optimal = sample_bandit.action(sample_avg=True)
             reward = sample_bandit.reward(action)
             sample_bandit.update(action, reward, sample_avg=True)
@@ -94,8 +97,11 @@ def run_experiment(num_episodes, num_steps):
  
 
 def main():
+    
+    # Run experiment and record results as command line argument
     np.savetxt(sys.argv[1], run_experiment(num_episodes, num_steps))
 
 
+    
 if __name__ == "__main__":
     main()
